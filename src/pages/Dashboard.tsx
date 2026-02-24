@@ -2,22 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, Map as MapIcon, BarChart as ChartIcon } from "lucide-react";
 
-// Fix Leaflet marker icon issue with Vite
-import iconUrl from "leaflet/dist/images/marker-icon.png";
-import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
-import shadowUrl from "leaflet/dist/images/marker-shadow.png";
-
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl,
-    iconUrl,
-    shadowUrl,
+// Create a glowing white dot icon for the "stars"
+const starIcon = L.divIcon({
+    className: "custom-star-marker",
+    html: `<div style="width: 12px; height: 12px; background: white; border-radius: 50%; box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);"></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
 });
 
 interface Employee {
@@ -50,8 +45,6 @@ const MOCK_DATA: Employee[] = [
     { employee_id: "8", employee_name: "Rhona Davidson", employee_salary: 327900, employee_age: 55, city: "Ahmedabad" },
 ];
 
-const COLORS = ['#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#0ea5e9'];
-
 export default function Dashboard() {
     const [data, setData] = useState<Employee[]>([]);
     const navigate = useNavigate();
@@ -70,7 +63,7 @@ export default function Dashboard() {
                 }
                 const finalData = Array.isArray(respData) ? respData : respData?.data || respData?.employees;
                 if (finalData && Array.isArray(finalData) && finalData.length > 0) {
-                    setData(finalData.slice(0, 10));
+                    setData(finalData.slice(0, 10)); // Take first 10
                 } else {
                     throw new Error("No array data");
                 }
@@ -95,97 +88,122 @@ export default function Dashboard() {
         };
     });
 
+    // Extract just the coordinates for the polyline to draw constellation lines
+    const constellationLines = mapMarkers.map(m => m.coords as [number, number]);
+
     return (
-        <div className="min-h-screen bg-slate-50 pb-12">
-            <header className="bg-white border-b sticky top-0 z-10 shadow-sm">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-black bg-[length:400%_400%] animate-gradient-x relative pb-12 text-white font-sans">
+            {/* Decorative starry background overlay */}
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 pointer-events-none"></div>
+
+            <header className="bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0 z-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <Button variant="ghost" className="gap-2 px-2" onClick={() => navigate(-1)}>
+                    <button
+                        onClick={() => navigate("/list")}
+                        className="flex items-center gap-2 text-slate-300 hover:text-white font-medium transition-colors"
+                    >
                         <ArrowLeft className="h-5 w-5" /> Back
-                    </Button>
-                    <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <ChartIcon className="h-5 w-5 text-indigo-500" />
+                    </button>
+                    <h1 className="text-xl font-black text-jotish flex items-center gap-2 tracking-wide drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]">
+                        <ChartIcon className="h-5 w-5" />
                         Analytics Dashboard
                     </h1>
-                    <div className="w-[88px]" />
+                    <div className="w-16" />
                 </div>
             </header>
 
             <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
 
-                    <Card className="shadow-lg border-white border-2">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <ChartIcon className="h-5 w-5 text-purple-500" />
-                                Top Salaries
-                            </CardTitle>
-                            <CardDescription>Salary distribution for the top employees</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-[400px] w-full mt-4">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                        <XAxis
-                                            dataKey="name"
-                                            tick={{ fill: '#64748b' }}
-                                            axisLine={false}
-                                            tickLine={false}
-                                            angle={-45}
-                                            textAnchor="end"
-                                        />
-                                        <YAxis
-                                            tick={{ fill: '#64748b' }}
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tickFormatter={(value) => `$${value / 1000}k`}
-                                        />
-                                        <Tooltip
-                                            cursor={{ fill: '#f1f5f9' }}
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                            formatter={(value: any) => [`$${Number(value).toLocaleString()}`, 'Salary']}
-                                        />
-                                        <Bar dataKey="salary" radius={[4, 4, 0, 0]}>
-                                            {chartData.map((_, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {/* Salary Bar Chart */}
+                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] relative overflow-hidden flex flex-col">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-jotish via-amber-400 to-orange-500"></div>
+                        <div className="mb-6">
+                            <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                                <ChartIcon className="h-5 w-5 text-jotish" />
+                                Earnings Overview
+                            </h2>
+                            <p className="text-slate-400 text-sm mt-1">Salary distribution (First 10 records)</p>
+                        </div>
 
-                    <Card className="shadow-lg border-white border-2 overflow-hidden flex flex-col">
-                        <CardHeader className="pb-2 z-10 bg-white">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <MapIcon className="h-5 w-5 text-emerald-500" />
-                                Employee Locations
-                            </CardTitle>
-                            <CardDescription>Geographical distribution across cities</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0 flex-1 min-h-[400px]">
+                        <div className="h-[400px] w-full mt-auto">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 60 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                                    <XAxis
+                                        dataKey="name"
+                                        tick={{ fill: '#94a3b8', fontSize: 13 }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        angle={-45}
+                                        textAnchor="end"
+                                    />
+                                    <YAxis
+                                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tickFormatter={(value) => `₹${value / 1000}k`}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }}
+                                        itemStyle={{ color: '#FFD700', fontWeight: 'bold' }}
+                                        formatter={(value: any) => [`₹${Number(value).toLocaleString()}`, 'Salary']}
+                                    />
+                                    <Bar dataKey="salary" radius={[6, 6, 0, 0]}>
+                                        {chartData.map((_, index) => (
+                                            <Cell key={`cell-${index}`} fill="#FFD700" />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Constellation Map */}
+                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] flex flex-col relative w-full">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 via-amber-400 to-jotish z-20"></div>
+                        <div className="p-6 pb-4 bg-transparent z-10 relative">
+                            <h2 className="text-xl font-bold flex items-center gap-2 text-white drop-shadow-md">
+                                <MapIcon className="h-5 w-5 text-jotish" />
+                                Network Constellation
+                            </h2>
+                            <p className="text-slate-300 text-sm mt-1">Geographical distribution of astrologers</p>
+                        </div>
+
+                        <div className="flex-1 min-h-[400px] relative z-0">
                             <MapContainer
-                                center={[21.1458, 79.0882]}
+                                center={[21.1458, 79.0882]} // Central India
                                 zoom={4.5}
                                 scrollWheelZoom={false}
-                                className="h-full w-full z-0"
+                                className="h-full w-full absolute inset-0 bg-[#0f172a]/50"
                             >
+                                {/* CartoDB Dark Matter */}
                                 <TileLayer
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                                 />
+
+                                {/* Constellation lines */}
+                                {constellationLines.length > 1 && (
+                                    <Polyline
+                                        positions={constellationLines}
+                                        pathOptions={{ color: 'rgba(255, 255, 255, 0.3)', weight: 1, dashArray: '5, 5' }}
+                                    />
+                                )}
+
+                                {/* Star Markers */}
                                 {mapMarkers.map((marker, idx) => (
-                                    <Marker key={idx} position={marker.coords as [number, number]}>
-                                        <Popup className="rounded-lg shadow-sm">
-                                            <div className="font-semibold text-slate-800">{marker.name}</div>
-                                            <div className="text-slate-500 text-sm">{marker.city}</div>
-                                        </Popup>
+                                    <Marker
+                                        key={idx}
+                                        position={marker.coords as [number, number]}
+                                        icon={starIcon}
+                                    >
                                     </Marker>
                                 ))}
                             </MapContainer>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
 
                 </div>
             </main>

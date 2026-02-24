@@ -1,79 +1,89 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Lock, User } from "lucide-react";
+import { User, Lock } from "lucide-react";
 
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
     const navigate = useNavigate();
-    const { toast } = useToast();
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
         if (username === "testuser" && password === "Test123") {
             navigate("/list");
         } else {
-            toast({
-                variant: "destructive",
-                title: "Authentication Failed",
-                description: "Invalid username or password. Please try again.",
-            });
+            setError("Invalid username or password");
         }
     };
 
     return (
-        <div className="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen">
-            <Card className="w-full max-w-md shadow-2xl bg-white/90 backdrop-blur-xl border-white/20">
-                <CardHeader className="space-y-1 text-center pb-8">
-                    <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">Welcome back</CardTitle>
-                    <CardDescription className="text-slate-500">
-                        Enter your credentials to access the dashboard
-                    </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleLogin}>
-                    <CardContent className="space-y-4 shadow-sm">
-                        <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                                <Input
-                                    id="username"
-                                    placeholder="testuser"
-                                    className="pl-9 bg-white/50"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    required
-                                />
-                            </div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-950 via-slate-900 to-black bg-[length:400%_400%] animate-gradient-x p-4 text-white relative">
+            {/* Decorative starry background overlay */}
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 pointer-events-none"></div>
+
+            <div className="relative z-10 w-full max-w-md p-10 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
+
+                {/* Placeholder JOTISH Logo */}
+                <div className="flex flex-col items-center justify-center mb-10">
+                    <div className="h-20 w-20 bg-black rounded-full border-2 border-jotish flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(255,215,0,0.4)]">
+                        <span className="text-jotish font-black text-3xl tracking-tighter">JØ</span>
+                    </div>
+                    <h1 className="text-3xl font-black text-white tracking-widest drop-shadow-md flex items-center">
+                        J<span className="text-jotish px-0.5">O</span>TISH
+                    </h1>
+                    <p className="text-sm text-slate-300 mt-2 font-light tracking-wide text-center">
+                        Honest, accurate & private.
+                    </p>
+                </div>
+
+                <form onSubmit={handleLogin} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-200 ml-1">Username</label>
+                        <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="testuser"
+                                className="w-full pl-12 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-jotish/50 text-white placeholder:text-slate-500 transition-all font-medium"
+                                required
+                            />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    className="pl-9 bg-white/50"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-200 ml-1">Password</label>
+                        <div className="relative">
+                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full pl-12 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-jotish/50 text-white placeholder:text-slate-500 transition-all font-medium"
+                                required
+                            />
                         </div>
-                    </CardContent>
-                    <CardFooter className="pt-6">
-                        <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 transition-all font-semibold rounded-lg h-11 shadow-md hover:shadow-lg">
+                    </div>
+
+                    <div className="pt-4">
+                        <button
+                            type="submit"
+                            className="w-full py-4 bg-jotish hover:bg-[#E5C100] text-black font-bold rounded-xl shadow-lg shadow-jotish/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-jotish/30 active:scale-95 text-lg"
+                        >
                             Sign In
-                        </Button>
-                    </CardFooter>
+                        </button>
+                        {error && (
+                            <div className="mt-5 text-center px-4 py-2 bg-red-500/10 rounded-lg border border-red-500/20">
+                                <p className="text-red-400 text-sm font-medium animate-in fade-in slide-in-from-top-2">{error}</p>
+                            </div>
+                        )}
+                    </div>
                 </form>
-            </Card>
+            </div>
         </div>
     );
 }
