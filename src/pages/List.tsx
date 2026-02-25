@@ -12,17 +12,19 @@ interface Employee {
     employee_salary: string | number;
     employee_age: string | number;
     city: string;
+    role?: string;
+    start_date?: string;
 }
 
 const MOCK_DATA: Employee[] = [
-    { employee_id: "1", employee_name: "Tiger Nixon", employee_salary: 320800, employee_age: 61, city: "Mumbai" },
-    { employee_id: "2", employee_name: "Garrett Winters", employee_salary: 170750, employee_age: 63, city: "Delhi" },
-    { employee_id: "3", employee_name: "Ashton Cox", employee_salary: 86000, employee_age: 66, city: "Bangalore" },
-    { employee_id: "4", employee_name: "Cedric Kelly", employee_salary: 433060, employee_age: 22, city: "Chennai" },
-    { employee_id: "5", employee_name: "Airi Satou", employee_salary: 162700, employee_age: 33, city: "Pune" },
-    { employee_id: "6", employee_name: "Brielle Williamson", employee_salary: 372000, employee_age: 61, city: "Hyderabad" },
-    { employee_id: "7", employee_name: "Herrod Chandler", employee_salary: 137500, employee_age: 59, city: "Kolkata" },
-    { employee_id: "8", employee_name: "Rhona Davidson", employee_salary: 327900, employee_age: 55, city: "Ahmedabad" },
+    { employee_id: "1", employee_name: "Tiger Nixon", employee_salary: 320800, employee_age: 61, city: "Mumbai", role: "System Architect", start_date: "2011/04/25" },
+    { employee_id: "2", employee_name: "Garrett Winters", employee_salary: 170750, employee_age: 63, city: "Delhi", role: "Accountant", start_date: "2011/07/25" },
+    { employee_id: "3", employee_name: "Ashton Cox", employee_salary: 86000, employee_age: 66, city: "Bangalore", role: "Junior Technical Author", start_date: "2009/01/12" },
+    { employee_id: "4", employee_name: "Cedric Kelly", employee_salary: 433060, employee_age: 22, city: "Chennai", role: "Senior Javascript Developer", start_date: "2012/03/29" },
+    { employee_id: "5", employee_name: "Airi Satou", employee_salary: 162700, employee_age: 33, city: "Pune", role: "Accountant", start_date: "2008/11/28" },
+    { employee_id: "6", employee_name: "Brielle Williamson", employee_salary: 372000, employee_age: 61, city: "Hyderabad", role: "Integration Specialist", start_date: "2012/12/02" },
+    { employee_id: "7", employee_name: "Herrod Chandler", employee_salary: 137500, employee_age: 59, city: "Kolkata", role: "Sales Assistant", start_date: "2012/08/06" },
+    { employee_id: "8", employee_name: "Rhona Davidson", employee_salary: 327900, employee_age: 55, city: "Ahmedabad", role: "Integration Specialist", start_date: "2010/10/14" },
 ];
 
 export default function List() {
@@ -48,8 +50,28 @@ export default function List() {
                     } catch (e) { }
                 }
 
-                const finalData = Array.isArray(data) ? data : data?.data || data?.employees;
-                if (finalData && Array.isArray(finalData) && finalData.length > 0) {
+                const tableData = data?.TABLE_DATA?.data || data?.data || data?.employees;
+                let finalData: any[] = [];
+
+                if (Array.isArray(tableData)) {
+                    if (tableData.length > 0 && Array.isArray(tableData[0])) {
+                        // Map array of arrays to objects
+                        finalData = tableData.map((arr: any[], index) => ({
+                            employee_name: arr[0] || "Unknown",
+                            role: arr[1] || "",
+                            city: arr[2] || "Unknown",
+                            employee_id: arr[3] || String(index),
+                            start_date: arr[4] || "",
+                            employee_salary: arr[5] ? Number(arr[5].replace(/[^0-9.-]+/g, "")) : 0,
+                            employee_age: 0
+                        }));
+                    } else {
+                        // Already an array of objects
+                        finalData = tableData;
+                    }
+                }
+
+                if (finalData && finalData.length > 0) {
                     setEmployees(finalData);
                 } else {
                     throw new Error("No data returned from API");

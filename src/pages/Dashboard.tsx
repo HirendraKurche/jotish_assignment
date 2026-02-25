@@ -21,6 +21,8 @@ interface Employee {
     employee_salary: string | number;
     employee_age: string | number;
     city: string;
+    role?: string;
+    start_date?: string;
 }
 
 const FALLBACK_CITIES: Record<string, [number, number]> = {
@@ -32,17 +34,24 @@ const FALLBACK_CITIES: Record<string, [number, number]> = {
     Hyderabad: [17.3850, 78.4867],
     Kolkata: [22.5726, 88.3639],
     Ahmedabad: [23.0225, 72.5714],
+    Edinburgh: [55.9533, -3.1883],
+    Tokyo: [35.6762, 139.6503],
+    "San Francisco": [37.7749, -122.4194],
+    "New York": [40.7128, -74.0060],
+    London: [51.5074, -0.1278],
+    Singapore: [1.3521, 103.8198],
+    Sidney: [-33.8688, 151.2093],
 };
 
 const MOCK_DATA: Employee[] = [
-    { employee_id: "1", employee_name: "Tiger Nixon", employee_salary: 320800, employee_age: 61, city: "Mumbai" },
-    { employee_id: "2", employee_name: "Garrett Winters", employee_salary: 170750, employee_age: 63, city: "Delhi" },
-    { employee_id: "3", employee_name: "Ashton Cox", employee_salary: 86000, employee_age: 66, city: "Bangalore" },
-    { employee_id: "4", employee_name: "Cedric Kelly", employee_salary: 433060, employee_age: 22, city: "Chennai" },
-    { employee_id: "5", employee_name: "Airi Satou", employee_salary: 162700, employee_age: 33, city: "Pune" },
-    { employee_id: "6", employee_name: "Brielle Williamson", employee_salary: 372000, employee_age: 61, city: "Hyderabad" },
-    { employee_id: "7", employee_name: "Herrod Chandler", employee_salary: 137500, employee_age: 59, city: "Kolkata" },
-    { employee_id: "8", employee_name: "Rhona Davidson", employee_salary: 327900, employee_age: 55, city: "Ahmedabad" },
+    { employee_id: "1", employee_name: "Tiger Nixon", employee_salary: 320800, employee_age: 61, city: "Mumbai", role: "System Architect", start_date: "2011/04/25" },
+    { employee_id: "2", employee_name: "Garrett Winters", employee_salary: 170750, employee_age: 63, city: "Delhi", role: "Accountant", start_date: "2011/07/25" },
+    { employee_id: "3", employee_name: "Ashton Cox", employee_salary: 86000, employee_age: 66, city: "Bangalore", role: "Junior Technical Author", start_date: "2009/01/12" },
+    { employee_id: "4", employee_name: "Cedric Kelly", employee_salary: 433060, employee_age: 22, city: "Chennai", role: "Senior Javascript Developer", start_date: "2012/03/29" },
+    { employee_id: "5", employee_name: "Airi Satou", employee_salary: 162700, employee_age: 33, city: "Pune", role: "Accountant", start_date: "2008/11/28" },
+    { employee_id: "6", employee_name: "Brielle Williamson", employee_salary: 372000, employee_age: 61, city: "Hyderabad", role: "Integration Specialist", start_date: "2012/12/02" },
+    { employee_id: "7", employee_name: "Herrod Chandler", employee_salary: 137500, employee_age: 59, city: "Kolkata", role: "Sales Assistant", start_date: "2012/08/06" },
+    { employee_id: "8", employee_name: "Rhona Davidson", employee_salary: 327900, employee_age: 55, city: "Ahmedabad", role: "Integration Specialist", start_date: "2010/10/14" },
 ];
 
 export default function Dashboard() {
@@ -61,14 +70,32 @@ export default function Dashboard() {
                 if (typeof respData === 'string') {
                     try { respData = JSON.parse(respData); } catch (e) { }
                 }
-                const finalData = Array.isArray(respData) ? respData : respData?.data || respData?.employees;
-                if (finalData && Array.isArray(finalData) && finalData.length > 0) {
-                    setData(finalData.slice(0, 10)); // Take first 10
+                const tableData = respData?.TABLE_DATA?.data || respData?.data || respData?.employees;
+                let finalData: any[] = [];
+
+                if (Array.isArray(tableData)) {
+                    if (tableData.length > 0 && Array.isArray(tableData[0])) {
+                        finalData = tableData.map((arr: any[], index) => ({
+                            employee_name: arr[0] || "Unknown",
+                            role: arr[1] || "",
+                            city: arr[2] || "Unknown",
+                            employee_id: arr[3] || String(index),
+                            start_date: arr[4] || "",
+                            employee_salary: arr[5] ? Number(arr[5].replace(/[^0-9.-]+/g, "")) : 0,
+                            employee_age: 0
+                        }));
+                    } else {
+                        finalData = tableData;
+                    }
+                }
+
+                if (finalData && finalData.length > 0) {
+                    setData(finalData);
                 } else {
                     throw new Error("No array data");
                 }
             } catch (error) {
-                setData(MOCK_DATA.slice(0, 10));
+                setData(MOCK_DATA);
             }
         };
         fetchStats();
@@ -123,7 +150,7 @@ export default function Dashboard() {
                                 <ChartIcon className="h-5 w-5 text-jotish" />
                                 Earnings Overview
                             </h2>
-                            <p className="text-slate-400 text-sm mt-1">Salary distribution (First 10 records)</p>
+                            <p className="text-slate-400 text-sm mt-1">Salary distribution across all retrieved astrologers</p>
                         </div>
 
                         <div className="h-[400px] w-full mt-auto">

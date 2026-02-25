@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Webcam from "react-webcam";
-import { ArrowLeft, User, MapPin } from "lucide-react";
+import { ArrowLeft, User, MapPin, Briefcase, Calendar } from "lucide-react";
 
 const videoConstraints = {
     width: 720,
@@ -67,13 +67,29 @@ export default function Details() {
                             <User className="h-8 w-8 text-amber-600" />
                         )}
                     </div>
-                    <div>
-                        <h2 className="text-xl font-black text-slate-900">{employee.employee_name}</h2>
-                        <div className="flex items-center text-sm text-slate-500 mt-1 font-medium gap-1">
-                            <MapPin className="h-4 w-4 text-slate-400" />
+                    <div className="flex-1 w-full pl-2 sm:pl-0">
+                        <h2 className="text-xl font-black text-slate-900 leading-tight">{employee.employee_name}</h2>
+
+                        {employee.role && (
+                            <div className="flex items-center text-sm font-bold text-orange-600 mt-1 mb-1 gap-1.5">
+                                <Briefcase className="h-[14px] w-[14px]" />
+                                {employee.role}
+                            </div>
+                        )}
+
+                        <div className="flex items-center text-sm text-slate-500 font-medium gap-1.5">
+                            <MapPin className="h-[14px] w-[14px] text-slate-400" />
                             {employee.city || "Unknown Location"}
                         </div>
-                        <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700">
+
+                        {employee.start_date && (
+                            <div className="flex items-center text-xs text-slate-400 font-medium gap-1.5 mt-0.5">
+                                <Calendar className="h-[12px] w-[12px]" />
+                                Joined {employee.start_date.split("/")[0]}
+                            </div>
+                        )}
+
+                        <div className="mt-3 inline-flex items-center px-3 py-1 bg-amber-50 rounded-full text-xs font-bold text-amber-700 border border-amber-100/50 shadow-sm">
                             ₹{Number(employee.employee_salary).toLocaleString()} / session
                         </div>
                     </div>
