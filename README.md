@@ -71,3 +71,11 @@ export default defineConfig([
   },
 ])
 ```
+
+## Screenshots
+
+![Screenshot 1](src/assets/Screenshot%20(9587).png)
+
+![Screenshot 2](src/assets/Screenshot%20(9588).png)
+
+![Screenshot 3](src/assets/Screenshot%20(9589).png)
